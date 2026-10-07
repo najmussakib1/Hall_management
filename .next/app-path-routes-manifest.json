@@ -1,0 +1,11 @@
+{
+  "/_not-found/page": "/_not-found",
+  "/_global-error/page": "/_global-error",
+  "/api/auth/login/route": "/api/auth/login",
+  "/api/dues/route": "/api/dues",
+  "/api/payments/route": "/api/payments",
+  "/api/stats/route": "/api/stats",
+  "/api/students/[id]/route": "/api/students/[id]",
+  "/api/students/route": "/api/students",
+  "/page": "/"
+}
