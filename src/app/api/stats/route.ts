@@ -55,12 +55,11 @@ export async function GET(request: Request) {
         COUNT(DISTINCT CASE WHEN s.status = 'resident' THEN s.id END) as resident_students,
         COALESCE(SUM(p.amount_paid), 0) as total_collected,
         COALESCE(SUM(d.amount - COALESCE(d.paid_amount, 0)), 0) as total_due,
-        m.name as manager_name
+        (SELECT m.name FROM managers m WHERE m.hall_id = h.id LIMIT 1) as manager_name
       FROM halls h
       LEFT JOIN students s ON s.hall_id = h.id
       LEFT JOIN payments p ON p.student_id = s.id
       LEFT JOIN dues d ON d.student_id = s.id AND d.status IN ('unpaid', 'partially_paid')
-      LEFT JOIN managers m ON m.hall_id = h.id
       GROUP BY h.id
       ORDER BY h.id ASC
     `).all();

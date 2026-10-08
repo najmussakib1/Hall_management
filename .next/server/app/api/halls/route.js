@@ -67,7 +67,7 @@
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE
     );
-  `);try{l.exec("ALTER TABLE dues ADD COLUMN paid_amount REAL DEFAULT 0.0;")}catch(a){}try{l.exec("ALTER TABLE managers ADD COLUMN hall_id INTEGER REFERENCES halls(id);")}catch(a){}try{l.exec("ALTER TABLE managers ADD COLUMN email TEXT;")}catch(a){}try{l.exec("ALTER TABLE managers ADD COLUMN phone TEXT;")}catch(a){}try{l.exec("ALTER TABLE students ADD COLUMN hall_id INTEGER NOT NULL DEFAULT 1 REFERENCES halls(id);")}catch(a){}if(0===l.prepare("SELECT COUNT(*) as count FROM halls").get().count){let a=l.prepare(`
+  `);try{l.exec("ALTER TABLE dues ADD COLUMN paid_amount REAL DEFAULT 0.0;")}catch(a){}try{l.exec("ALTER TABLE managers ADD COLUMN hall_id INTEGER REFERENCES halls(id);")}catch(a){}try{l.exec("ALTER TABLE managers ADD COLUMN email TEXT;")}catch(a){}try{l.exec("ALTER TABLE managers ADD COLUMN phone TEXT;")}catch(a){}try{l.exec("ALTER TABLE students ADD COLUMN hall_id INTEGER DEFAULT 1;")}catch(a){}if(0===l.prepare("SELECT COUNT(*) as count FROM halls").get().count){let a=l.prepare(`
       INSERT INTO halls (id, name, code, capacity, location, description)
       VALUES (?, ?, ?, ?, ?, ?)
     `);a.run(1,"Sher-e-Bangla Hall","SBH",450,"North Campus Zone A","Premier male residential hall"),a.run(2,"Begum Rokeya Hall","BRH",500,"South Campus Zone B","Premier female residential hall"),a.run(3,"Fazlul Huq Muslim Hall","FHMH",400,"Central Science Campus","Undergraduate and graduate hall"),a.run(4,"Shahidullah Hall","SHH",380,"East Campus Quad","Science faculty residential hall")}if(l.prepare(`
@@ -95,14 +95,16 @@
          FROM dues d 
          JOIN students s ON s.id = d.student_id 
          WHERE s.hall_id = h.id AND d.status IN ('unpaid', 'partially_paid')) as total_due,
-        m.name as manager_name,
-        m.username as manager_username,
-        m.email as manager_email,
-        m.phone as manager_phone
+        (SELECT m.name FROM managers m WHERE m.hall_id = h.id LIMIT 1) as manager_name,
+        (SELECT m.username FROM managers m WHERE m.hall_id = h.id LIMIT 1) as manager_username,
+        (SELECT m.email FROM managers m WHERE m.hall_id = h.id LIMIT 1) as manager_email,
+        (SELECT m.phone FROM managers m WHERE m.hall_id = h.id LIMIT 1) as manager_phone
       FROM halls h
-      LEFT JOIN managers m ON m.hall_id = h.id
       ORDER BY h.id ASC
-    `).all();return d.NextResponse.json({success:!0,halls:a})}catch(a){return d.NextResponse.json({success:!1,error:a.message},{status:500})}}async function g(a){try{let{name:b,code:c,capacity:f=400,location:g="",description:h=""}=await a.json();if(!b||!c)return d.NextResponse.json({success:!1,error:"Hall name and code are required"},{status:400});if(e.A.prepare("SELECT id FROM halls WHERE name = ? OR code = ?").get(b.trim(),c.trim()))return d.NextResponse.json({success:!1,error:"A hall with this name or code already exists"},{status:400});let i=e.A.prepare(`
+    `).all();return d.NextResponse.json({success:!0,halls:a})}catch(a){return d.NextResponse.json({success:!1,error:a.message},{status:500})}}async function g(a){try{let{name:b,code:c,capacity:f=400,location:g="",description:h=""}=await a.json();if(!b||!c)return d.NextResponse.json({success:!1,error:"Hall name and code are required"},{status:400});let i=b.trim(),j=c.trim().toUpperCase(),k=parseInt(f,10)||400,l=e.A.prepare(`
+      SELECT id, name, code FROM halls 
+      WHERE LOWER(name) = LOWER(?) OR UPPER(code) = UPPER(?)
+    `).get(i,j);if(l){let a=l.code.toUpperCase()===j?"code":"name";return d.NextResponse.json({success:!1,error:`A hall with this ${a} (${"code"===a?l.code:l.name}) already exists`},{status:400})}let m=e.A.prepare(`
       INSERT INTO halls (name, code, capacity, location, description)
       VALUES (?, ?, ?, ?, ?)
-    `).run(b.trim(),c.trim().toUpperCase(),parseInt(f,10),g?g.trim():null,h?h.trim():null);return d.NextResponse.json({success:!0,hallId:i.lastInsertRowid})}catch(a){return d.NextResponse.json({success:!1,error:a.message},{status:500})}}}};var b=require("../../../webpack-runtime.js");b.C(a);var c=b.X(0,[266,813],()=>b(b.s=6259));module.exports=c})();
+    `).run(i,j,k,g?g.trim():null,h?h.trim():null),n=e.A.prepare("SELECT * FROM halls WHERE id = ?").get(m.lastInsertRowid);return d.NextResponse.json({success:!0,hallId:m.lastInsertRowid,hall:n})}catch(a){return d.NextResponse.json({success:!1,error:a.message},{status:500})}}}};var b=require("../../../webpack-runtime.js");b.C(a);var c=b.X(0,[266,813],()=>b(b.s=6259));module.exports=c})();

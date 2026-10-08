@@ -67,7 +67,7 @@
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE
     );
-  `);try{l.exec("ALTER TABLE dues ADD COLUMN paid_amount REAL DEFAULT 0.0;")}catch(a){}try{l.exec("ALTER TABLE managers ADD COLUMN hall_id INTEGER REFERENCES halls(id);")}catch(a){}try{l.exec("ALTER TABLE managers ADD COLUMN email TEXT;")}catch(a){}try{l.exec("ALTER TABLE managers ADD COLUMN phone TEXT;")}catch(a){}try{l.exec("ALTER TABLE students ADD COLUMN hall_id INTEGER NOT NULL DEFAULT 1 REFERENCES halls(id);")}catch(a){}if(0===l.prepare("SELECT COUNT(*) as count FROM halls").get().count){let a=l.prepare(`
+  `);try{l.exec("ALTER TABLE dues ADD COLUMN paid_amount REAL DEFAULT 0.0;")}catch(a){}try{l.exec("ALTER TABLE managers ADD COLUMN hall_id INTEGER REFERENCES halls(id);")}catch(a){}try{l.exec("ALTER TABLE managers ADD COLUMN email TEXT;")}catch(a){}try{l.exec("ALTER TABLE managers ADD COLUMN phone TEXT;")}catch(a){}try{l.exec("ALTER TABLE students ADD COLUMN hall_id INTEGER DEFAULT 1;")}catch(a){}if(0===l.prepare("SELECT COUNT(*) as count FROM halls").get().count){let a=l.prepare(`
       INSERT INTO halls (id, name, code, capacity, location, description)
       VALUES (?, ?, ?, ?, ?, ?)
     `);a.run(1,"Sher-e-Bangla Hall","SBH",450,"North Campus Zone A","Premier male residential hall"),a.run(2,"Begum Rokeya Hall","BRH",500,"South Campus Zone B","Premier female residential hall"),a.run(3,"Fazlul Huq Muslim Hall","FHMH",400,"Central Science Campus","Undergraduate and graduate hall"),a.run(4,"Shahidullah Hall","SHH",380,"East Campus Quad","Science faculty residential hall")}if(l.prepare(`

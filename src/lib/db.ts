@@ -106,7 +106,7 @@ export function initDB() {
   } catch (e) {}
 
   try {
-    db.exec(`ALTER TABLE students ADD COLUMN hall_id INTEGER NOT NULL DEFAULT 1 REFERENCES halls(id);`);
+    db.exec(`ALTER TABLE students ADD COLUMN hall_id INTEGER DEFAULT 1;`);
   } catch (e) {}
 
   // Seed default halls if none exist
