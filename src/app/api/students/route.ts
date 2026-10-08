@@ -1,22 +1,31 @@
 import { NextResponse } from 'next/server';
 import db from '@/lib/db';
 
-// GET all students with due calculation and total paid
+// GET all students with hall filtering and due calculation
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status');
     const search = searchParams.get('search');
+    const hallId = searchParams.get('hall_id');
 
     let query = `
       SELECT 
         s.*,
+        h.name as hall_name,
+        h.code as hall_code,
         COALESCE((SELECT SUM(amount - COALESCE(paid_amount, 0)) FROM dues WHERE student_id = s.id AND status IN ('unpaid', 'partially_paid')), 0) as total_due,
         COALESCE((SELECT SUM(amount_paid) FROM payments WHERE student_id = s.id), 0) as total_paid
       FROM students s
+      JOIN halls h ON h.id = s.hall_id
       WHERE 1=1
     `;
     const params: any[] = [];
+
+    if (hallId && hallId !== 'all') {
+      query += ` AND s.hall_id = ?`;
+      params.push(parseInt(hallId, 10));
+    }
 
     if (status && status !== 'all') {
       query += ` AND s.status = ?`;
@@ -44,6 +53,7 @@ export async function POST(request: Request) {
     const data = await request.json();
     const {
       student_id,
+      hall_id = 1,
       name,
       email,
       phone,
@@ -66,12 +76,13 @@ export async function POST(request: Request) {
     }
 
     const stmt = db.prepare(`
-      INSERT INTO students (student_id, name, email, phone, room_number, department, session, monthly_fee, status, guardian_name, guardian_phone)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO students (student_id, hall_id, name, email, phone, room_number, department, session, monthly_fee, status, guardian_name, guardian_phone)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
 
     const result = stmt.run(
       student_id.trim(),
+      parseInt(hall_id, 10),
       name.trim(),
       email ? email.trim() : null,
       phone.trim(),

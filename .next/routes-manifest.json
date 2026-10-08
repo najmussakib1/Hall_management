@@ -63,6 +63,18 @@
       "namedRegex": "^/api/dues(?:/)?$"
     },
     {
+      "page": "/api/halls",
+      "regex": "^/api/halls(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/halls(?:/)?$"
+    },
+    {
+      "page": "/api/managers",
+      "regex": "^/api/managers(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/managers(?:/)?$"
+    },
+    {
       "page": "/api/payments",
       "regex": "^/api/payments(?:/)?$",
       "routeKeys": {},

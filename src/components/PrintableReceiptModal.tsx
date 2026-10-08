@@ -34,7 +34,7 @@ export default function PrintableReceiptModal({ payment, onClose }: PrintableRec
         <div className="flex justify-between items-start border-b border-slate-200 pb-1.5 mb-2">
           <div>
             <h1 className="font-bold text-sm tracking-wide text-slate-900 uppercase">
-              SHER-E-BANGLA HALL / HOSTEL MANAGEMENT
+              {payment.hall_name ? `${payment.hall_name.toUpperCase()} / HOSTEL MANAGEMENT` : 'UNIVERSITY HALL / HOSTEL MANAGEMENT'}
             </h1>
             <p className="text-[10px] text-slate-500">Hall Administration & Accounts Section</p>
           </div>

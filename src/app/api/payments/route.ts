@@ -12,21 +12,34 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const limit = parseInt(searchParams.get('limit') || '50', 10);
+    const hallId = searchParams.get('hall_id');
 
-    const payments = db.prepare(`
+    let query = `
       SELECT 
         p.*,
         s.name as student_name,
         s.room_number as room_number,
         s.student_id as student_code,
         s.phone as student_phone,
-        s.department as student_department
+        s.department as student_department,
+        h.name as hall_name,
+        h.code as hall_code
       FROM payments p
       JOIN students s ON s.id = p.student_id
-      ORDER BY p.paid_at DESC, p.id DESC
-      LIMIT ?
-    `).all(limit);
+      JOIN halls h ON h.id = s.hall_id
+      WHERE 1=1
+    `;
+    const params: any[] = [];
 
+    if (hallId && hallId !== 'all') {
+      query += ` AND s.hall_id = ?`;
+      params.push(parseInt(hallId, 10));
+    }
+
+    query += ` ORDER BY p.paid_at DESC, p.id DESC LIMIT ?`;
+    params.push(limit);
+
+    const payments = db.prepare(query).all(...params);
     return NextResponse.json({ success: true, payments });
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
@@ -65,13 +78,11 @@ export async function POST(request: Request) {
 
     // Database transaction: record payment and update dues accurately
     const executePayment = db.transaction(() => {
-      // 1. If a specific due was selected
       let targetDue = null;
       if (due_id) {
         targetDue = db.prepare('SELECT * FROM dues WHERE id = ? AND student_id = ?').get(due_id, student_id) as any;
       }
 
-      // If no specific due provided, look for the latest unpaid due for this student
       if (!targetDue) {
         targetDue = db.prepare(`
           SELECT * FROM dues 
@@ -87,7 +98,6 @@ export async function POST(request: Request) {
         const curRemaining = targetDue.amount - curPaid;
 
         if (remainingPayment >= curRemaining) {
-          // Completely pays off targetDue
           db.prepare(`
             UPDATE dues 
             SET paid_amount = amount, status = 'paid' 
@@ -95,7 +105,6 @@ export async function POST(request: Request) {
           `).run(targetDue.id);
           remainingPayment -= curRemaining;
         } else {
-          // Partially pays off targetDue
           const newPaid = curPaid + remainingPayment;
           db.prepare(`
             UPDATE dues 
@@ -106,7 +115,6 @@ export async function POST(request: Request) {
         }
       }
 
-      // If there's surplus payment left and other unpaid dues exist, apply backwards to other older/unpaid dues
       if (remainingPayment > 0) {
         const otherDues = db.prepare(`
           SELECT * FROM dues 
@@ -135,7 +143,6 @@ export async function POST(request: Request) {
         }
       }
 
-      // 2. Insert Payment Record
       const paymentResult = db.prepare(`
         INSERT INTO payments (receipt_no, student_id, month_year, amount_paid, due_adjusted, payment_method, transaction_id, remarks, received_by)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -156,7 +163,6 @@ export async function POST(request: Request) {
 
     const paymentId = executePayment();
 
-    // Query full student info and updated outstanding due
     const completePayment = db.prepare(`
       SELECT 
         p.*,
@@ -166,9 +172,12 @@ export async function POST(request: Request) {
         s.phone as student_phone,
         s.department as student_department,
         s.session as student_session,
+        h.name as hall_name,
+        h.code as hall_code,
         (SELECT COALESCE(SUM(amount - COALESCE(paid_amount, 0)), 0) FROM dues WHERE student_id = s.id AND status IN ('unpaid', 'partially_paid')) as remaining_due
       FROM payments p
       JOIN students s ON s.id = p.student_id
+      JOIN halls h ON h.id = s.hall_id
       WHERE p.id = ?
     `).get(paymentId);
 

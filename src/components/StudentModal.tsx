@@ -1,19 +1,28 @@
 'use client';
 
 import React, { useState } from 'react';
-import { X, UserPlus, Save } from 'lucide-react';
-import { Student } from '@/types';
+import { X, UserPlus, Save, Building } from 'lucide-react';
+import { Student, Hall } from '@/types';
 
 interface StudentModalProps {
+  halls?: Hall[];
+  defaultHallId?: number;
   student?: Student | null;
   onClose: () => void;
   onSuccess: () => void;
 }
 
-export default function StudentModal({ student, onClose, onSuccess }: StudentModalProps) {
+export default function StudentModal({
+  halls = [],
+  defaultHallId = 1,
+  student,
+  onClose,
+  onSuccess,
+}: StudentModalProps) {
   const isEditing = !!student;
 
   const [formData, setFormData] = useState({
+    hall_id: student?.hall_id ? student.hall_id.toString() : defaultHallId.toString(),
     student_id: student?.student_id || '',
     name: student?.name || '',
     email: student?.email || '',
@@ -72,7 +81,7 @@ export default function StudentModal({ student, onClose, onSuccess }: StudentMod
               {isEditing ? `Edit Student: ${student.name}` : 'Register New Student Profile'}
             </h3>
           </div>
-          <button onClick={onClose} className="text-slate-400 hover:text-white p-1 rounded-lg">
+          <button onClick={onClose} className="text-slate-400 hover:text-white p-1 rounded-lg cursor-pointer">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -81,6 +90,31 @@ export default function StudentModal({ student, onClose, onSuccess }: StudentMod
           {error && (
             <div className="p-3 bg-red-50 text-red-700 border border-red-200 rounded-lg text-sm">
               {error}
+            </div>
+          )}
+
+          {/* Hall Selection if multiple halls available */}
+          {halls.length > 0 && (
+            <div>
+              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">
+                Assigned Hall *
+              </label>
+              <div className="relative">
+                <Building className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
+                <select
+                  name="hall_id"
+                  value={formData.hall_id}
+                  onChange={handleChange}
+                  className="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-hidden bg-slate-50 font-medium"
+                  required
+                >
+                  {halls.map((h) => (
+                    <option key={h.id} value={h.id}>
+                      {h.name} ({h.code})
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
           )}
 

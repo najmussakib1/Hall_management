@@ -9,15 +9,29 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, error: 'Username and password are required' }, { status: 400 });
     }
 
-    const manager = db.prepare('SELECT id, username, name, role, password FROM managers WHERE username = ?').get(username) as any;
+    const user = db.prepare(`
+      SELECT 
+        m.id, 
+        m.username, 
+        m.name, 
+        m.role, 
+        m.password, 
+        m.hall_id, 
+        m.email, 
+        m.phone,
+        h.name as hall_name,
+        h.code as hall_code
+      FROM managers m
+      LEFT JOIN halls h ON h.id = m.hall_id
+      WHERE m.username = ?
+    `).get(username) as any;
 
-    if (!manager || manager.password !== password) {
+    if (!user || user.password !== password) {
       return NextResponse.json({ success: false, error: 'Invalid username or password' }, { status: 401 });
     }
 
-    // Return manager info (in real app, session cookie or token would be set)
-    const { password: _, ...user } = manager;
-    return NextResponse.json({ success: true, user });
+    const { password: _, ...safeUser } = user;
+    return NextResponse.json({ success: true, user: safeUser });
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
