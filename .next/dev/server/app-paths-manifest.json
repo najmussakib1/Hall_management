@@ -1,10 +1,10 @@
 {
   "/api/halls/route": "app/api/halls/route.js",
+  "/api/managers/route": "app/api/managers/route.js",
   "/api/students/route": "app/api/students/route.js",
   "/api/payments/route": "app/api/payments/route.js",
-  "/api/dues/route": "app/api/dues/route.js",
-  "/api/auth/login/route": "app/api/auth/login/route.js",
-  "/api/managers/route": "app/api/managers/route.js",
   "/api/stats/route": "app/api/stats/route.js",
+  "/api/dues/route": "app/api/dues/route.js",
+  "/_not-found/page": "app/_not-found/page.js",
   "/page": "app/page.js"
 }

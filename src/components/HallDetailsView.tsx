@@ -188,7 +188,23 @@ export default function HallDetailsView({
             <CreditCard className="w-4 h-4" />
             <span>Receive Payment</span>
           </button>
-        </div>
+        <div className="flex items-center space-x-2 ml-4">
+  <Calendar className="w-4 h-4 text-slate-600" />
+  <input
+    type="month"
+    value={reportMonth}
+    onChange={e => setReportMonth(e.target.value)}
+    className="px-2 py-1 border border-slate-300 rounded-md text-xs"
+  />
+  <button
+    onClick={() => window.open(`/api/halls/${hall?.id}/report?month=${reportMonth}`, '_blank')}
+    className="px-3 py-2 bg-gray-700 hover:bg-gray-800 text-white rounded-xl text-xs font-semibold flex items-center space-x-1"
+  >
+    <FileText className="w-4 h-4" />
+    <span>Download Report</span>
+  </button>
+</div>
+</div>
       </div>
 
       {/* 4 Clean Primary Metric Cards */}
