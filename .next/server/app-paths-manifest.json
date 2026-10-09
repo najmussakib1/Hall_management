@@ -3,6 +3,7 @@
   "/_global-error/page": "app/_global-error/page.js",
   "/api/auth/login/route": "app/api/auth/login/route.js",
   "/api/dues/route": "app/api/dues/route.js",
+  "/api/halls/[id]/report/route": "app/api/halls/[id]/report/route.js",
   "/api/halls/route": "app/api/halls/route.js",
   "/api/managers/route": "app/api/managers/route.js",
   "/api/payments/route": "app/api/payments/route.js",

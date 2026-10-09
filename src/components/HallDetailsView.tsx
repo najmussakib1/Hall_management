@@ -30,6 +30,7 @@ interface HallDetailsViewProps {
   onOpenStudentProfile: (studentId: number) => void;
   onPrintReceipt: (payment: Payment) => void;
   onEditHall: (hall: Hall) => void;
+  onOpenReport: (hallId: number, month: string) => void;
 }
 
 export default function HallDetailsView({
@@ -40,6 +41,7 @@ export default function HallDetailsView({
   onOpenStudentProfile,
   onPrintReceipt,
   onEditHall,
+  onOpenReport,
 }: HallDetailsViewProps) {
   const [hall, setHall] = useState<Hall | null>(null);
   const [students, setStudents] = useState<Student[]>([]);
@@ -197,7 +199,7 @@ export default function HallDetailsView({
     className="px-2 py-1 border border-slate-300 rounded-md text-xs"
   />
   <button
-    onClick={() => window.open(`/api/halls/${hall?.id}/report?month=${reportMonth}`, '_blank')}
+    onClick={() => hall && onOpenReport(hall.id, reportMonth)}
     className="px-3 py-2 bg-gray-700 hover:bg-gray-800 text-white rounded-xl text-xs font-semibold flex items-center space-x-1"
   >
     <FileText className="w-4 h-4" />

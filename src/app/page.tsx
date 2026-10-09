@@ -26,6 +26,7 @@ import {
 import { Student, Payment, ManagerUser, Hall } from '@/types';
 import LoginForm from '@/components/LoginForm';
 import PrintableReceiptModal from '@/components/PrintableReceiptModal';
+import PrintableReportModal from '@/components/PrintableReportModal';
 import PaymentModal from '@/components/PaymentModal';
 import StudentModal from '@/components/StudentModal';
 import DueModal from '@/components/DueModal';
@@ -79,6 +80,7 @@ export default function AppHome() {
   const [selectedStudentForDue, setSelectedStudentForDue] = useState<Student | null>(null);
 
   const [activeReceiptPayment, setActiveReceiptPayment] = useState<any | null>(null);
+  const [reportModal, setReportModal] = useState<{ hallId: number; month: string } | null>(null);
   const [profileModalStudentId, setProfileModalStudentId] = useState<number | null>(null);
 
   // Superadmin modals
@@ -420,6 +422,9 @@ export default function AppHome() {
             onEditHall={(hall) => {
               setEditingHall(hall);
               setShowHallModal(true);
+            }}
+            onOpenReport={(hallId, month) => {
+              setReportModal({ hallId, month });
             }}
           />
         )}
@@ -902,6 +907,14 @@ export default function AppHome() {
         <PrintableReceiptModal
           payment={activeReceiptPayment}
           onClose={() => setActiveReceiptPayment(null)}
+        />
+      )}
+
+      {reportModal && (
+        <PrintableReportModal
+          hallId={reportModal.hallId}
+          month={reportModal.month}
+          onClose={() => setReportModal(null)}
         />
       )}
 

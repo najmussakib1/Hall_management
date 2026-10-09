@@ -1,0 +1,1 @@
+globalThis.__RSC_MANIFEST=(globalThis.__RSC_MANIFEST||{});globalThis.__RSC_MANIFEST["/api/halls/[id]/report/route"]={"moduleLoading":{"prefix":"/_next/"},"ssrModuleMapping":{},"edgeSSRModuleMapping":{},"clientModules":{},"entryCSSFiles":{"/Volumes/Drive 1/hostel management software/src/app/api/halls/[id]/report/route":[]},"rscModuleMapping":{},"edgeRscModuleMapping":{}};

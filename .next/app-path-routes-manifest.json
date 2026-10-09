@@ -3,6 +3,7 @@
   "/_global-error/page": "/_global-error",
   "/api/auth/login/route": "/api/auth/login",
   "/api/dues/route": "/api/dues",
+  "/api/halls/[id]/report/route": "/api/halls/[id]/report",
   "/api/halls/route": "/api/halls",
   "/api/managers/route": "/api/managers",
   "/api/payments/route": "/api/payments",
