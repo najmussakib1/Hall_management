@@ -49,11 +49,11 @@ export default function SuperadminAnalytics({
         <div>
           <div className="flex items-center space-x-2">
             <span className="px-2.5 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/40 text-[11px] font-bold uppercase tracking-wider">
-              Central University Hall Controller
+              Central Management Controller
             </span>
             <span className="text-xs text-slate-400">• Multi-Hall Oversight</span>
           </div>
-          <h2 className="text-2xl font-black tracking-tight mt-1">Superadmin Financial & Hall Analytics</h2>
+          <h2 className="text-2xl font-black tracking-tight mt-1">Central Management: Financial & Hall Analytics</h2>
           <p className="text-xs text-purple-200 mt-1 max-w-2xl">
             Real-time aggregate calculations, revenue collection rates, dues breakdown, and manager hall supervision across the university network.
           </p>

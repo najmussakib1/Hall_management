@@ -197,12 +197,12 @@ export default function AppHome() {
               <div className="flex items-center space-x-2">
                 <h1 className="font-bold text-base leading-tight">
                   {isSuperadmin
-                    ? 'University Multi-Hall Management System'
+                    ? 'Central Management System'
                     : assignedHall ? `${assignedHall.name} (${assignedHall.code})` : 'Hall & Hostel Management'}
                 </h1>
                 {isSuperadmin ? (
                   <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-500/20 text-purple-300 border border-purple-500/30 uppercase tracking-wider">
-                    Superadmin Central
+                    Central Management
                   </span>
                 ) : (
                   <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 uppercase tracking-wider">
@@ -212,7 +212,7 @@ export default function AppHome() {
               </div>
               <p className="text-[11px] text-slate-400">
                 {isSuperadmin
-                  ? 'Central Superadmin Oversight • All Halls & Finance Controls'
+                  ? 'Central Management Oversight • All Halls & Finance Controls'
                   : `Provost / Manager Office • Hall Code: ${assignedHall?.code || 'N/A'}`}
               </p>
             </div>
