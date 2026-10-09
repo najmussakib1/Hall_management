@@ -4,6 +4,7 @@
       name TEXT UNIQUE NOT NULL,
       code TEXT UNIQUE NOT NULL,
       capacity INTEGER NOT NULL DEFAULT 500,
+      monthly_fee REAL NOT NULL DEFAULT 2000.0,
       location TEXT,
       description TEXT,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
@@ -67,10 +68,10 @@
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE
     );
-  `);try{l.exec("ALTER TABLE dues ADD COLUMN paid_amount REAL DEFAULT 0.0;")}catch(a){}try{l.exec("ALTER TABLE managers ADD COLUMN hall_id INTEGER REFERENCES halls(id);")}catch(a){}try{l.exec("ALTER TABLE managers ADD COLUMN email TEXT;")}catch(a){}try{l.exec("ALTER TABLE managers ADD COLUMN phone TEXT;")}catch(a){}try{l.exec("ALTER TABLE students ADD COLUMN hall_id INTEGER DEFAULT 1;")}catch(a){}if(0===l.prepare("SELECT COUNT(*) as count FROM halls").get().count){let a=l.prepare(`
-      INSERT INTO halls (id, name, code, capacity, location, description)
-      VALUES (?, ?, ?, ?, ?, ?)
-    `);a.run(1,"Sher-e-Bangla Hall","SBH",450,"North Campus Zone A","Premier male residential hall"),a.run(2,"Begum Rokeya Hall","BRH",500,"South Campus Zone B","Premier female residential hall"),a.run(3,"Fazlul Huq Muslim Hall","FHMH",400,"Central Science Campus","Undergraduate and graduate hall"),a.run(4,"Shahidullah Hall","SHH",380,"East Campus Quad","Science faculty residential hall")}if(l.prepare(`
+  `);try{l.exec("ALTER TABLE dues ADD COLUMN paid_amount REAL DEFAULT 0.0;")}catch(a){}try{l.exec("ALTER TABLE managers ADD COLUMN hall_id INTEGER REFERENCES halls(id);")}catch(a){}try{l.exec("ALTER TABLE managers ADD COLUMN email TEXT;")}catch(a){}try{l.exec("ALTER TABLE managers ADD COLUMN phone TEXT;")}catch(a){}try{l.exec("ALTER TABLE students ADD COLUMN hall_id INTEGER DEFAULT 1;")}catch(a){}try{l.exec("ALTER TABLE halls ADD COLUMN monthly_fee REAL DEFAULT 2000.0;")}catch(a){}if(0===l.prepare("SELECT COUNT(*) as count FROM halls").get().count){let a=l.prepare(`
+      INSERT INTO halls (id, name, code, capacity, monthly_fee, location, description)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+    `);a.run(1,"Sher-e-Bangla Hall","SBH",450,2e3,"North Campus Zone A","Premier male residential hall"),a.run(2,"Begum Rokeya Hall","BRH",500,2e3,"South Campus Zone B","Premier female residential hall"),a.run(3,"Fazlul Huq Muslim Hall","FHMH",400,2e3,"Central Science Campus","Undergraduate and graduate hall"),a.run(4,"Shahidullah Hall","SHH",380,2e3,"East Campus Quad","Science faculty residential hall")}if(l.prepare(`
     INSERT OR IGNORE INTO managers (id, username, password, name, role, hall_id)
     VALUES (100, 'superadmin', 'admin123', 'Central University Controller', 'superadmin', NULL)
   `).run(),l.prepare(`
@@ -79,7 +80,7 @@
   `).run(),l.prepare("UPDATE managers SET hall_id = 1 WHERE username = 'manager' AND hall_id IS NULL").run(),0===l.prepare("SELECT COUNT(*) as count FROM students").get().count){let a=l.prepare(`
       INSERT OR IGNORE INTO students (student_id, hall_id, name, email, phone, room_number, department, session, monthly_fee, status, guardian_name, guardian_phone)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `),b=a.run("CSE-2022-042",1,"Tariqul Islam","tariq@example.com","01711000001","302-A","Computer Science & Engineering","2021-2022",2500,"resident","Md. Rafiqul Islam","01811000001"),c=a.run("EEE-2022-115",1,"Nusrat Jahan","nusrat@example.com","01711000002","205-B","Electrical & Electronic Eng.","2021-2022",2500,"resident","Nazmul Huda","01811000002"),d=a.run("BBA-2023-088",1,"Sadman Shakib","sadman@example.com","01711000003","108-A","Business Administration","2022-2023",2200,"resident","Kazi Mahbub","01811000003"),e=a.run("ME-2021-019",2,"Farhana Yesmin","farhana@example.com","01711000004","412-C","Mechanical Engineering","2020-2021",2500,"resident","Ali Ahmed","01811000004");a.run("CE-2023-054",2,"Farzana Akter","farzana@example.com","01711000005","210-A","Civil Engineering","2022-2023",2200,"resident","Abdur Rashid","01811000005");let f=l.prepare("INSERT INTO dues (student_id, title, month_year, amount, status) VALUES (?, ?, ?, ?, ?)");b.lastInsertRowid&&f.run(b.lastInsertRowid,"Monthly Fee - September 2026","September 2026",2500,"unpaid"),c.lastInsertRowid&&f.run(c.lastInsertRowid,"Monthly Fee - August 2026","August 2026",2500,"paid"),d.lastInsertRowid&&f.run(d.lastInsertRowid,"Utility & Maintenance Due","September 2026",600,"unpaid"),e.lastInsertRowid&&f.run(e.lastInsertRowid,"Monthly Fee - September 2026","September 2026",2500,"unpaid");let g=l.prepare(`
+    `),b=a.run("CSE-2022-042",1,"Tariqul Islam","tariq@example.com","01711000001","302-A","Computer Science & Engineering","2021-2022",2e3,"resident","Md. Rafiqul Islam","01811000001"),c=a.run("EEE-2022-115",1,"Nusrat Jahan","nusrat@example.com","01711000002","205-B","Electrical & Electronic Eng.","2021-2022",2e3,"resident","Nazmul Huda","01811000002"),d=a.run("BBA-2023-088",1,"Sadman Shakib","sadman@example.com","01711000003","108-A","Business Administration","2022-2023",2e3,"resident","Kazi Mahbub","01811000003"),e=a.run("ME-2021-019",2,"Farhana Yesmin","farhana@example.com","01711000004","412-C","Mechanical Engineering","2020-2021",2e3,"resident","Ali Ahmed","01811000004");a.run("CE-2023-054",2,"Farzana Akter","farzana@example.com","01711000005","210-A","Civil Engineering","2022-2023",2e3,"resident","Abdur Rashid","01811000005");let f=l.prepare("INSERT INTO dues (student_id, title, month_year, amount, status) VALUES (?, ?, ?, ?, ?)");b.lastInsertRowid&&f.run(b.lastInsertRowid,"Monthly Fee - September 2026","September 2026",2500,"unpaid"),c.lastInsertRowid&&f.run(c.lastInsertRowid,"Monthly Fee - August 2026","August 2026",2500,"paid"),d.lastInsertRowid&&f.run(d.lastInsertRowid,"Utility & Maintenance Due","September 2026",600,"unpaid"),e.lastInsertRowid&&f.run(e.lastInsertRowid,"Monthly Fee - September 2026","September 2026",2500,"unpaid");let g=l.prepare(`
       INSERT OR IGNORE INTO payments (receipt_no, student_id, month_year, amount_paid, payment_method, remarks, received_by)
       VALUES (?, ?, ?, ?, ?, ?, ?)
     `);c.lastInsertRowid&&g.run("REC-20260901-001",c.lastInsertRowid,"August 2026",2500,"Cash","Cleared in full with August rent","Manager")}}(),global.__hall_db_initialized=!0);let m=l},3033:a=>{"use strict";a.exports=require("next/dist/server/app-render/work-unit-async-storage.external.js")},3250:(a,b,c)=>{"use strict";c.r(b),c.d(b,{GET:()=>f,POST:()=>g});var d=c(3211),e=c(866);async function f(a){try{let{searchParams:b}=new URL(a.url),c=b.get("status"),f=b.get("search"),g=b.get("hall_id"),h=`
@@ -87,6 +88,7 @@
         s.*,
         h.name as hall_name,
         h.code as hall_code,
+        h.monthly_fee as hall_monthly_fee,
         COALESCE((SELECT SUM(amount - COALESCE(paid_amount, 0)) FROM dues WHERE student_id = s.id AND status IN ('unpaid', 'partially_paid')), 0) as total_due,
         COALESCE((SELECT SUM(amount_paid) FROM payments WHERE student_id = s.id), 0) as total_paid
       FROM students s

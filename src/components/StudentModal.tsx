@@ -21,6 +21,13 @@ export default function StudentModal({
 }: StudentModalProps) {
   const isEditing = !!student;
 
+  const selectedHallObj = halls.find((h) => h.id.toString() === (student?.hall_id ? student.hall_id.toString() : defaultHallId.toString()));
+  const initialDefaultFee = student?.monthly_fee
+    ? student.monthly_fee.toString()
+    : selectedHallObj?.monthly_fee
+    ? selectedHallObj.monthly_fee.toString()
+    : '2000';
+
   const [formData, setFormData] = useState({
     hall_id: student?.hall_id ? student.hall_id.toString() : defaultHallId.toString(),
     student_id: student?.student_id || '',
@@ -30,7 +37,7 @@ export default function StudentModal({
     room_number: student?.room_number || '',
     department: student?.department || '',
     session: student?.session || '',
-    monthly_fee: student?.monthly_fee?.toString() || '2000',
+    monthly_fee: initialDefaultFee,
     status: student?.status || 'resident',
     guardian_name: student?.guardian_name || '',
     guardian_phone: student?.guardian_phone || '',
@@ -40,7 +47,17 @@ export default function StudentModal({
   const [error, setError] = useState<string | null>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    if (name === 'hall_id' && !isEditing) {
+      const newHall = halls.find((h) => h.id.toString() === value);
+      setFormData({
+        ...formData,
+        hall_id: value,
+        monthly_fee: newHall?.monthly_fee ? newHall.monthly_fee.toString() : formData.monthly_fee,
+      });
+      return;
+    }
+    setFormData({ ...formData, [name]: value });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {

@@ -3,6 +3,7 @@ export interface Hall {
   name: string;
   code: string;
   capacity: number;
+  monthly_fee?: number;
   location: string | null;
   description: string | null;
   created_at: string;
@@ -32,6 +33,7 @@ export interface Student {
   created_at: string;
   hall_name?: string;
   hall_code?: string;
+  hall_monthly_fee?: number;
   total_due?: number;
   total_paid?: number;
 }
@@ -83,6 +85,7 @@ export interface ManagerUser {
   hall_id?: number | null;
   hall_name?: string | null;
   hall_code?: string | null;
+  hall_monthly_fee?: number | null;
   email?: string | null;
   phone?: string | null;
   created_at?: string;

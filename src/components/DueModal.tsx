@@ -7,6 +7,7 @@ import { Student } from '@/types';
 interface DueModalProps {
   students: Student[];
   preSelectedStudent?: Student | null;
+  hallMonthlyFee?: number;
   onClose: () => void;
   onSuccess: () => void;
 }
@@ -14,6 +15,7 @@ interface DueModalProps {
 export default function DueModal({
   students,
   preSelectedStudent,
+  hallMonthlyFee,
   onClose,
   onSuccess,
 }: DueModalProps) {
@@ -23,11 +25,22 @@ export default function DueModal({
   const currentDate = new Date();
   const currentMonth = currentDate.toLocaleString('default', { month: 'long', year: 'numeric' });
 
+  // Default fee resolution priority:
+  // 1. Hall standard monthly fee passed explicitly (or on the student's hall)
+  // 2. Student's specific monthly_fee
+  // 3. Fallback default 2000
+  const resolveDefaultFee = (st?: Student | null) => {
+    if (hallMonthlyFee) return hallMonthlyFee.toString();
+    if (st?.hall_monthly_fee) return st.hall_monthly_fee.toString();
+    if (st?.monthly_fee) return st.monthly_fee.toString();
+    return '2000';
+  };
+
   const [isBulk, setIsBulk] = useState<boolean>(false);
   const [selectedStudentId, setSelectedStudentId] = useState<number>(defaultStudent ? defaultStudent.id : 0);
   const [title, setTitle] = useState<string>(`Monthly Fee - ${currentMonth}`);
   const [monthYear, setMonthYear] = useState<string>(currentMonth);
-  const [amount, setAmount] = useState<string>(defaultStudent ? defaultStudent.monthly_fee.toString() : '2000');
+  const [amount, setAmount] = useState<string>(resolveDefaultFee(defaultStudent));
   const [bulkFeeType, setBulkFeeType] = useState<'individual_default' | 'fixed'>('individual_default');
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -122,7 +135,7 @@ export default function DueModal({
                   const id = parseInt(e.target.value, 10);
                   setSelectedStudentId(id);
                   const s = students.find((st) => st.id === id);
-                  if (s) setAmount(s.monthly_fee.toString());
+                  if (s) setAmount(resolveDefaultFee(s));
                 }}
                 className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-slate-50 focus:ring-2 focus:ring-amber-500 focus:outline-hidden"
               >

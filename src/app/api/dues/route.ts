@@ -7,6 +7,7 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const studentId = searchParams.get('student_id');
     const status = searchParams.get('status'); // 'unpaid', 'all', etc.
+    const hallId = searchParams.get('hall_id');
 
     let query = `
       SELECT 
@@ -14,9 +15,14 @@ export async function GET(request: Request) {
         (d.amount - COALESCE(d.paid_amount, 0)) as remaining_amount,
         s.name as student_name,
         s.student_id as student_code,
-        s.room_number
+        s.room_number,
+        s.phone as student_phone,
+        h.id as hall_id,
+        h.name as hall_name,
+        h.code as hall_code
       FROM dues d
       JOIN students s ON s.id = d.student_id
+      JOIN halls h ON h.id = s.hall_id
       WHERE 1=1
     `;
     const params: any[] = [];
@@ -24,6 +30,11 @@ export async function GET(request: Request) {
     if (studentId) {
       query += ` AND d.student_id = ?`;
       params.push(parseInt(studentId, 10));
+    }
+
+    if (hallId && hallId !== 'all') {
+      query += ` AND s.hall_id = ?`;
+      params.push(parseInt(hallId, 10));
     }
 
     if (status && status !== 'all') {

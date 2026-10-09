@@ -23,6 +23,7 @@ export function initDB() {
       name TEXT UNIQUE NOT NULL,
       code TEXT UNIQUE NOT NULL,
       capacity INTEGER NOT NULL DEFAULT 500,
+      monthly_fee REAL NOT NULL DEFAULT 2000.0,
       location TEXT,
       description TEXT,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
@@ -109,17 +110,21 @@ export function initDB() {
     db.exec(`ALTER TABLE students ADD COLUMN hall_id INTEGER DEFAULT 1;`);
   } catch (e) {}
 
+  try {
+    db.exec(`ALTER TABLE halls ADD COLUMN monthly_fee REAL DEFAULT 2000.0;`);
+  } catch (e) {}
+
   // Seed default halls if none exist
   const countHalls = db.prepare('SELECT COUNT(*) as count FROM halls').get() as { count: number };
   if (countHalls.count === 0) {
     const insertHall = db.prepare(`
-      INSERT INTO halls (id, name, code, capacity, location, description)
-      VALUES (?, ?, ?, ?, ?, ?)
+      INSERT INTO halls (id, name, code, capacity, monthly_fee, location, description)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
     `);
-    insertHall.run(1, 'Sher-e-Bangla Hall', 'SBH', 450, 'North Campus Zone A', 'Premier male residential hall');
-    insertHall.run(2, 'Begum Rokeya Hall', 'BRH', 500, 'South Campus Zone B', 'Premier female residential hall');
-    insertHall.run(3, 'Fazlul Huq Muslim Hall', 'FHMH', 400, 'Central Science Campus', 'Undergraduate and graduate hall');
-    insertHall.run(4, 'Shahidullah Hall', 'SHH', 380, 'East Campus Quad', 'Science faculty residential hall');
+    insertHall.run(1, 'Sher-e-Bangla Hall', 'SBH', 450, 2000, 'North Campus Zone A', 'Premier male residential hall');
+    insertHall.run(2, 'Begum Rokeya Hall', 'BRH', 500, 2000, 'South Campus Zone B', 'Premier female residential hall');
+    insertHall.run(3, 'Fazlul Huq Muslim Hall', 'FHMH', 400, 2000, 'Central Science Campus', 'Undergraduate and graduate hall');
+    insertHall.run(4, 'Shahidullah Hall', 'SHH', 380, 2000, 'East Campus Quad', 'Science faculty residential hall');
   }
 
   // Seed default superadmin if not exists
@@ -146,13 +151,13 @@ export function initDB() {
     `);
 
     // Hall 1 students
-    const s1 = insertStudent.run('CSE-2022-042', 1, 'Tariqul Islam', 'tariq@example.com', '01711000001', '302-A', 'Computer Science & Engineering', '2021-2022', 2500, 'resident', 'Md. Rafiqul Islam', '01811000001');
-    const s2 = insertStudent.run('EEE-2022-115', 1, 'Nusrat Jahan', 'nusrat@example.com', '01711000002', '205-B', 'Electrical & Electronic Eng.', '2021-2022', 2500, 'resident', 'Nazmul Huda', '01811000002');
-    const s3 = insertStudent.run('BBA-2023-088', 1, 'Sadman Shakib', 'sadman@example.com', '01711000003', '108-A', 'Business Administration', '2022-2023', 2200, 'resident', 'Kazi Mahbub', '01811000003');
+    const s1 = insertStudent.run('CSE-2022-042', 1, 'Tariqul Islam', 'tariq@example.com', '01711000001', '302-A', 'Computer Science & Engineering', '2021-2022', 2000, 'resident', 'Md. Rafiqul Islam', '01811000001');
+    const s2 = insertStudent.run('EEE-2022-115', 1, 'Nusrat Jahan', 'nusrat@example.com', '01711000002', '205-B', 'Electrical & Electronic Eng.', '2021-2022', 2000, 'resident', 'Nazmul Huda', '01811000002');
+    const s3 = insertStudent.run('BBA-2023-088', 1, 'Sadman Shakib', 'sadman@example.com', '01711000003', '108-A', 'Business Administration', '2022-2023', 2000, 'resident', 'Kazi Mahbub', '01811000003');
 
     // Hall 2 students
-    const s4 = insertStudent.run('ME-2021-019', 2, 'Farhana Yesmin', 'farhana@example.com', '01711000004', '412-C', 'Mechanical Engineering', '2020-2021', 2500, 'resident', 'Ali Ahmed', '01811000004');
-    const s5 = insertStudent.run('CE-2023-054', 2, 'Farzana Akter', 'farzana@example.com', '01711000005', '210-A', 'Civil Engineering', '2022-2023', 2200, 'resident', 'Abdur Rashid', '01811000005');
+    const s4 = insertStudent.run('ME-2021-019', 2, 'Farhana Yesmin', 'farhana@example.com', '01711000004', '412-C', 'Mechanical Engineering', '2020-2021', 2000, 'resident', 'Ali Ahmed', '01811000004');
+    const s5 = insertStudent.run('CE-2023-054', 2, 'Farzana Akter', 'farzana@example.com', '01711000005', '210-A', 'Civil Engineering', '2022-2023', 2000, 'resident', 'Abdur Rashid', '01811000005');
 
     // Add initial dues and payments
     const insertDue = db.prepare(`INSERT INTO dues (student_id, title, month_year, amount, status) VALUES (?, ?, ?, ?, ?)`);

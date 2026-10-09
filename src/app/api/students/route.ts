@@ -14,6 +14,7 @@ export async function GET(request: Request) {
         s.*,
         h.name as hall_name,
         h.code as hall_code,
+        h.monthly_fee as hall_monthly_fee,
         COALESCE((SELECT SUM(amount - COALESCE(paid_amount, 0)) FROM dues WHERE student_id = s.id AND status IN ('unpaid', 'partially_paid')), 0) as total_due,
         COALESCE((SELECT SUM(amount_paid) FROM payments WHERE student_id = s.id), 0) as total_paid
       FROM students s

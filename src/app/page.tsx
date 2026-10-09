@@ -21,6 +21,7 @@ import {
   ShieldCheck,
   Building2,
   Layers,
+  Coins,
 } from 'lucide-react';
 import { Student, Payment, ManagerUser, Hall } from '@/types';
 import LoginForm from '@/components/LoginForm';
@@ -33,14 +34,16 @@ import SuperadminAnalytics from '@/components/SuperadminAnalytics';
 import ManagersDirectory from '@/components/ManagersDirectory';
 import ManagerModal from '@/components/ManagerModal';
 import HallModal from '@/components/HallModal';
+import HallDetailsView from '@/components/HallDetailsView';
 
 export default function AppHome() {
   const [currentUser, setCurrentUser] = useState<ManagerUser | null>(null);
-  const [activeTab, setActiveTab] = useState<'analytics' | 'managers' | 'students' | 'payments' | 'overview'>('students');
+  const [activeTab, setActiveTab] = useState<'analytics' | 'managers' | 'students' | 'payments' | 'overview' | 'hall-details'>('students');
 
   // Multi-hall state
   const [halls, setHalls] = useState<Hall[]>([]);
   const [selectedHallFilter, setSelectedHallFilter] = useState<string>('all');
+  const [selectedHallDetailsId, setSelectedHallDetailsId] = useState<number | null>(null);
   const [managers, setManagers] = useState<ManagerUser[]>([]);
 
   // Analytics states
@@ -80,6 +83,7 @@ export default function AppHome() {
 
   // Superadmin modals
   const [showHallModal, setShowHallModal] = useState<boolean>(false);
+  const [editingHall, setEditingHall] = useState<Hall | null>(null);
   const [showManagerModal, setShowManagerModal] = useState<boolean>(false);
   const [editingManager, setEditingManager] = useState<ManagerUser | null>(null);
 
@@ -205,15 +209,23 @@ export default function AppHome() {
                     Central Management
                   </span>
                 ) : (
-                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 uppercase tracking-wider">
-                    Hall Manager Portal
-                  </span>
+                  <div className="flex items-center space-x-1.5">
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 uppercase tracking-wider">
+                      Hall Manager Portal
+                    </span>
+                    {assignedHall && (
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 flex items-center space-x-1">
+                        <Coins className="w-2.5 h-2.5 text-emerald-400" />
+                        <span>Monthly Fee: {(assignedHall.monthly_fee || 2000).toLocaleString()} ৳</span>
+                      </span>
+                    )}
+                  </div>
                 )}
               </div>
               <p className="text-[11px] text-slate-400">
                 {isSuperadmin
                   ? 'Central Management Oversight • All Halls & Finance Controls'
-                  : `Provost / Manager Office • Hall Code: ${assignedHall?.code || 'N/A'}`}
+                  : `Provost / Manager Office • Hall Code: ${assignedHall?.code || 'N/A'}${assignedHall ? ` • Standard Monthly Fee: ${(assignedHall.monthly_fee || 2000).toLocaleString()} ৳` : ''}`}
               </p>
             </div>
           </div>
@@ -244,7 +256,10 @@ export default function AppHome() {
             {isSuperadmin && (
               <>
                 <button
-                  onClick={() => setActiveTab('analytics')}
+                  onClick={() => {
+                    setSelectedHallDetailsId(null);
+                    setActiveTab('analytics');
+                  }}
                   className={`px-4 py-2 text-xs font-semibold rounded-lg transition cursor-pointer flex items-center space-x-2 ${
                     activeTab === 'analytics'
                       ? 'bg-purple-700 text-white shadow-xs'
@@ -255,7 +270,10 @@ export default function AppHome() {
                   <span>Central Analytics & Graphs</span>
                 </button>
                 <button
-                  onClick={() => setActiveTab('managers')}
+                  onClick={() => {
+                    setSelectedHallDetailsId(null);
+                    setActiveTab('managers');
+                  }}
                   className={`px-4 py-2 text-xs font-semibold rounded-lg transition cursor-pointer flex items-center space-x-2 ${
                     activeTab === 'managers'
                       ? 'bg-purple-700 text-white shadow-xs'
@@ -265,6 +283,14 @@ export default function AppHome() {
                   <ShieldCheck className="w-4 h-4" />
                   <span>Managers & Accounts ({managers.length})</span>
                 </button>
+                {activeTab === 'hall-details' && selectedHallDetailsId && (
+                  <button
+                    className="px-4 py-2 text-xs font-bold rounded-lg bg-indigo-600 text-white shadow-xs flex items-center space-x-2"
+                  >
+                    <Building2 className="w-4 h-4" />
+                    <span>Hall Details: {halls.find((h) => h.id === selectedHallDetailsId)?.code || 'Selected'}</span>
+                  </button>
+                )}
               </>
             )}
 
@@ -350,10 +376,50 @@ export default function AppHome() {
             methodDistribution={methodDistribution}
             selectedHallFilter={selectedHallFilter}
             onSelectHallFilter={(hallId) => setSelectedHallFilter(hallId)}
-            onOpenCreateHall={() => setShowHallModal(true)}
+            onOpenCreateHall={() => {
+              setEditingHall(null);
+              setShowHallModal(true);
+            }}
+            onEditHall={(hall) => {
+              setEditingHall(hall);
+              setShowHallModal(true);
+            }}
             onOpenCreateManager={() => {
               setEditingManager(null);
               setShowManagerModal(true);
+            }}
+            onOpenHallDetails={(hallId) => {
+              setSelectedHallDetailsId(hallId);
+              setActiveTab('hall-details');
+            }}
+          />
+        )}
+
+        {/* VIEW: DEDICATED CLEAN HALL DETAILS PAGE (Admin View) */}
+        {activeTab === 'hall-details' && selectedHallDetailsId && (
+          <HallDetailsView
+            hallId={selectedHallDetailsId}
+            onBack={() => {
+              setSelectedHallDetailsId(null);
+              setActiveTab('analytics');
+            }}
+            onOpenPaymentModal={(student) => {
+              setSelectedStudentForPayment(student || null);
+              setShowPaymentModal(true);
+            }}
+            onOpenDueModal={(student) => {
+              setSelectedStudentForDue(student || null);
+              setShowDueModal(true);
+            }}
+            onOpenStudentProfile={(stId) => {
+              setProfileModalStudentId(stId);
+            }}
+            onPrintReceipt={(payment) => {
+              setActiveReceiptPayment(payment);
+            }}
+            onEditHall={(hall) => {
+              setEditingHall(hall);
+              setShowHallModal(true);
             }}
           />
         )}
@@ -378,7 +444,7 @@ export default function AppHome() {
         {activeTab === 'students' && (
           <div className="space-y-4">
             {/* KPI Banner for selected hall or global */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
               <div className="bg-white rounded-2xl p-5 shadow-xs border border-slate-200 flex items-center justify-between">
                 <div>
                   <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Active Residents</p>
@@ -387,6 +453,24 @@ export default function AppHome() {
                 </div>
                 <div className="p-3 bg-indigo-50 text-indigo-600 rounded-xl">
                   <UserCheck className="w-6 h-6" />
+                </div>
+              </div>
+
+              {/* Hall Monthly Fee card */}
+              <div className="bg-white rounded-2xl p-5 shadow-xs border border-slate-200 flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                    {assignedHall ? `${assignedHall.code} Monthly Fee` : 'Hall Base Fee'}
+                  </p>
+                  <h3 className="text-2xl font-bold text-indigo-700 mt-1">
+                    {(assignedHall?.monthly_fee || (halls.length > 0 ? halls[0].monthly_fee : 2000) || 2000).toLocaleString()} ৳
+                  </h3>
+                  <p className="text-[11px] text-indigo-600 font-medium mt-0.5">
+                    {isSuperadmin ? 'Configurable by Admin' : 'Set by Central Admin'}
+                  </p>
+                </div>
+                <div className="p-3 bg-indigo-50 text-indigo-700 rounded-xl">
+                  <Coins className="w-6 h-6" />
                 </div>
               </div>
 
@@ -785,6 +869,7 @@ export default function AppHome() {
         <DueModal
           students={students}
           preSelectedStudent={selectedStudentForDue}
+          hallMonthlyFee={assignedHall?.monthly_fee}
           onClose={() => setShowDueModal(false)}
           onSuccess={() => {
             setShowDueModal(false);
@@ -820,12 +905,17 @@ export default function AppHome() {
         />
       )}
 
-      {/* Superadmin Hall Creation Modal */}
+      {/* Superadmin Hall Creation / Edit Modal */}
       {showHallModal && (
         <HallModal
-          onClose={() => setShowHallModal(false)}
+          hall={editingHall}
+          onClose={() => {
+            setShowHallModal(false);
+            setEditingHall(null);
+          }}
           onSuccess={() => {
             setShowHallModal(false);
+            setEditingHall(null);
             fetchHallsAndManagers();
             fetchData();
           }}

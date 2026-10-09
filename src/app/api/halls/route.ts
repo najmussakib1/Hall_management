@@ -35,7 +35,7 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const data = await request.json();
-    const { name, code, capacity = 400, location = '', description = '' } = data;
+    const { name, code, capacity = 400, monthly_fee = 2000, location = '', description = '' } = data;
 
     if (!name || !code) {
       return NextResponse.json({ success: false, error: 'Hall name and code are required' }, { status: 400 });
@@ -44,6 +44,7 @@ export async function POST(request: Request) {
     const trimmedName = name.trim();
     const upperCode = code.trim().toUpperCase();
     const parsedCapacity = parseInt(capacity, 10) || 400;
+    const parsedMonthlyFee = parseFloat(monthly_fee) || 2000;
 
     const checkExists = db.prepare(`
       SELECT id, name, code FROM halls 
@@ -59,14 +60,15 @@ export async function POST(request: Request) {
     }
 
     const stmt = db.prepare(`
-      INSERT INTO halls (name, code, capacity, location, description)
-      VALUES (?, ?, ?, ?, ?)
+      INSERT INTO halls (name, code, capacity, monthly_fee, location, description)
+      VALUES (?, ?, ?, ?, ?, ?)
     `);
 
     const result = stmt.run(
       trimmedName,
       upperCode,
       parsedCapacity,
+      parsedMonthlyFee,
       location ? location.trim() : null,
       description ? description.trim() : null
     );
@@ -74,6 +76,73 @@ export async function POST(request: Request) {
     const createdHall = db.prepare('SELECT * FROM halls WHERE id = ?').get(result.lastInsertRowid);
 
     return NextResponse.json({ success: true, hallId: result.lastInsertRowid, hall: createdHall });
+  } catch (error: any) {
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+  }
+}
+
+// PUT: Superadmin can update an existing Hall (including monthly_fee)
+export async function PUT(request: Request) {
+  try {
+    const data = await request.json();
+    const { id, name, code, capacity, monthly_fee, location, description, update_students_fee } = data;
+
+    if (!id) {
+      return NextResponse.json({ success: false, error: 'Hall ID is required' }, { status: 400 });
+    }
+
+    const hall = db.prepare('SELECT * FROM halls WHERE id = ?').get(id) as any;
+    if (!hall) {
+      return NextResponse.json({ success: false, error: 'Hall not found' }, { status: 404 });
+    }
+
+    const trimmedName = name !== undefined ? name.trim() : hall.name;
+    const upperCode = code !== undefined ? code.trim().toUpperCase() : hall.code;
+    const parsedCapacity = capacity !== undefined ? parseInt(capacity, 10) || hall.capacity : hall.capacity;
+    const parsedMonthlyFee = monthly_fee !== undefined ? parseFloat(monthly_fee) || hall.monthly_fee : hall.monthly_fee;
+    const updatedLocation = location !== undefined ? (location ? location.trim() : null) : hall.location;
+    const updatedDesc = description !== undefined ? (description ? description.trim() : null) : hall.description;
+
+    // Check duplicate code or name for other halls
+    const checkExists = db.prepare(`
+      SELECT id, name, code FROM halls 
+      WHERE (LOWER(name) = LOWER(?) OR UPPER(code) = UPPER(?)) AND id != ?
+    `).get(trimmedName, upperCode, id) as any;
+
+    if (checkExists) {
+      const matchType = checkExists.code.toUpperCase() === upperCode ? 'code' : 'name';
+      return NextResponse.json({ 
+        success: false, 
+        error: `Another hall with this ${matchType} (${matchType === 'code' ? checkExists.code : checkExists.name}) already exists` 
+      }, { status: 400 });
+    }
+
+    db.prepare(`
+      UPDATE halls 
+      SET name = ?, code = ?, capacity = ?, monthly_fee = ?, location = ?, description = ?
+      WHERE id = ?
+    `).run(
+      trimmedName,
+      upperCode,
+      parsedCapacity,
+      parsedMonthlyFee,
+      updatedLocation,
+      updatedDesc,
+      id
+    );
+
+    // If superadmin checked option to sync all current resident students in this hall with the new monthly fee:
+    if (update_students_fee) {
+      db.prepare(`
+        UPDATE students
+        SET monthly_fee = ?
+        WHERE hall_id = ?
+      `).run(parsedMonthlyFee, id);
+    }
+
+    const updatedHall = db.prepare('SELECT * FROM halls WHERE id = ?').get(id);
+
+    return NextResponse.json({ success: true, message: 'Hall updated successfully', hall: updatedHall });
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }

@@ -20,7 +20,8 @@ export async function POST(request: Request) {
         m.email, 
         m.phone,
         h.name as hall_name,
-        h.code as hall_code
+        h.code as hall_code,
+        h.monthly_fee as hall_monthly_fee
       FROM managers m
       LEFT JOIN halls h ON h.id = m.hall_id
       WHERE m.username = ?
